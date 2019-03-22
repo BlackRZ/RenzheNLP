@@ -1,0 +1,43 @@
+import re
+from PIL import Image
+import sys
+import string
+import pandas as pd
+import csv
+import numpy as np
+import urllib.parse
+from io import BytesIO
+import os
+import time
+import json
+from lxml import etree
+import requests
+from bs4 import BeautifulSoup as bs
+filepath='C:/Users/lirenzhe01/Downloads/avid1.csv'
+df=pd.read_csv(filepath, names = ['did'])
+print(df)
+list1=[]
+num=df.shape[0]-1
+print(num)
+for i in range(0,num):
+    did=df.iloc[i].did
+    c=[1,2,3,4,5,6,7]
+    url = "https://api.bilibili.com/x/web-interface/view?aid=" + str(did)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+    r = requests.get(url, headers=headers)
+    a = json.loads(r.text)
+    if(a.__contains__('data')):
+        b=a['data']['tname']
+        c[0]=did
+        c[1]=b
+        c[2]=a['data']['title']
+        c[3] = a['data']['stat']['view']
+        c[4] = a['data']['stat']['reply']
+        c[5] = a['data']['owner']['mid']
+        c[6] = a['data']['owner']['name']
+        list1.append(c)
+    else:print(a)
+
+result=pd.DataFrame(data=list1)
+result.to_csv("C:/Users/lirenzhe01/Documents/report/result0322-1.csv",index=False,sep=',')
