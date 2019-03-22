@@ -1,0 +1,43 @@
+import re
+from PIL import Image
+import sys
+import string
+from io import BytesIO
+import os
+import time
+from lxml import etree
+import requests
+from bs4 import BeautifulSoup as bs
+import pandas as pd
+
+num=1
+for i in range(0,1):
+    target = '英雄联盟新闻'
+    filep = target
+    os.mkdir('d:/weibo/' + filep)
+    url = "https://s.weibo.com/weibo/" + target + "?topnav=1&wvr=6&b=1"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+    r = requests.get(url, headers=headers)
+    soup = bs(r.text, 'html.parser')
+    a = soup.find_all("ul", class_="m3")
+    str1 = str(a)
+    pattern = re.compile(r'src="(.*?)"', re.S)
+    item_list = pattern.findall(str1)
+    i = 0
+    for child in item_list:
+        p = re.compile(r'sinaimg.cn/(.*?)/')
+        e = p.sub(r'sinaimg.cn/large/', child)
+        e = "http:" + e
+        item_list[i] = e
+        i += 1
+    path = 0
+    for child in item_list:
+        r = requests.get(child)
+        print(child)
+        path += 1
+        e = path
+        e = str(e) + "TimeStamp" + str(time.time())
+        img = Image.open(BytesIO(r.content))
+        img = img.convert('RGB')
+        img.save('d:/weibo/'+filep+'/No.' + e + '.jpg')
