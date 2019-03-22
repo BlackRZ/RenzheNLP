@@ -1,0 +1,55 @@
+import re
+from PIL import Image
+import sys
+import string
+import urllib.parse
+from io import BytesIO
+import os
+import time
+import json
+from lxml import etree
+import requests
+from bs4 import BeautifulSoup as bs
+uid="沙雕"+str(time.strftime("%Y-%m-%d",time.localtime()))
+filep = uid
+os.mkdir('d:/weibo/' + filep)
+url="https://m.weibo.cn/api/container/getIndex?uid=5108265142&luicode=10000011&lfid=100103type%3D1%26q%3D%E6%B2%99%E9%9B%95%E5%9B%BE&sudaref=m.weibo.cn&display=0&retcode=6102&type=uid&value=5108265142&containerid=1076035108265142"
+headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+cookie={"Cookie":" SINAGLOBAL=3719025272922.014.1552272847359; SUB=_2AkMr2ULhf8NxqwJRmPATy2rmaY91zg3EieKdhbM6JRMxHRl-yT83qkYGtRB6AFlsDtAs3Y7Tbqy7bZsaSLjil2dh_uQp; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WhX8o8jlx9o-ezN0KXMB6Tr; wb_view_log=1920*10801; UOR=,,www.baidu.com; login_sid_t=beef50a2943cd640ee8ee184cc32f89c; cross_origin_proto=SSL; Ugrow-G0=370f21725a3b0b57d0baaf8dd6f16a18; YF-V5-G0=96c3bfa80dc53c34a567607076bb434e; _s_tentry=www.baidu.com; Apache=4906458788172.41.1552295899689; ULV=1552295899716:2:2:2:4906458788172.41.1552295899689:1552272847421; YF-Page-G0=4b5a51adf43e782f0f0fb9c1ea76df93"}
+for m in range(2,30):
+    r = requests.get(url, headers=headers)
+    time.sleep(5)
+    a = json.loads(r.text)
+    num = len(a['data']['cards']) - 1
+    for i in range(0, num):
+        if (a['data']['cards'][i]['card_type'] == 9):
+            if ('pics' in a['data']['cards'][i]['mblog']):
+                print(a['data']['cards'][i]['mblog']['original_pic'])
+                print(a['data']['cards'][i]['mblog']['text'])
+                a1 = re.sub('[^\w\u4e00-\u9fa5]+', '', str(a['data']['cards'][i]['mblog']['text']))
+                if(len(a1)>30):
+                    a1=a1[0:30]
+                num1=len(a['data']['cards'][i]['mblog']['pics'])
+                for j in range(0,num1):
+                    r = requests.get(a['data']['cards'][i]['mblog']['pics'][j]['large']['url'])
+                    img = Image.open(BytesIO(r.content))
+                    a3=img.size
+                    stamp=a3[1]/20
+                    img = img.crop((0, 0,a3[0], a3[1]-stamp))
+                    img = img.convert('RGB')
+                    img.save('d:/weibo/' + filep + '/' + a1 +'NO.'+str(j)+ '.jpg')
+    url=url+'&page='+str(m)
+
+# pattern = re.compile(r'src=(.*?)jpg', re.S)
+# item_list = pattern.findall(a)
+# i=0
+# for child in item_list:
+#     child1=urllib.parse.unquote(child,'utf-8')
+#     child1=str(child1)
+#     print(child1)
+#     p = re.compile(r'sinaimg.cn/(.*?)/')
+#     e=p.sub(r'sinaimg.cn/large/', child1)
+#     e="http:"+e
+#     item_list[i]=e
+#     i+=1
+# path=0
